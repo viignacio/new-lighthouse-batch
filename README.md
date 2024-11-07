@@ -39,7 +39,10 @@ Your folder structure should look like this:
   ```
 
 ## Running the Script
-Once you have completed the setup, you can run the script as follows: node lighthouse-audit.js
+Once you have completed the setup, you can run the script as follows: 
+  ```bash
+  node lighthouse-audit.js
+  ```
 
 The script will:
 1.	Read each URL from urls.txt.
