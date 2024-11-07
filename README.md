@@ -9,6 +9,7 @@ This script automates running Lighthouse audits on a list of URLs, generating in
 
   ```bash
   npm install -g lighthouse
+  ```
 
 ## Setup
 1. Clone or Download the Repository
@@ -19,6 +20,7 @@ Clone or download this repository to your local machine.
   https://example.com
   https://anotherexample.com
   https://yetanotherexample.com
+  ```
 
 3. Customize the Script Settings
 •	Output Folder: You can specify the output folder where the Lighthouse reports will be saved by modifying the outputFolder variable in the lighthouse-audit.js script. By default, it is set to lighthouse-reports.
@@ -32,6 +34,7 @@ Your folder structure should look like this:
     ├── lighthouse-audit.js    # The script file
     ├── README.md              # This README file
     └── lighthouse-reports/    # Output folder for reports (will be created automatically)
+    ```
 
 ## Running the Script
 Once you have completed the setup, you can run the script as follows: node lighthouse-audit.js
@@ -48,6 +51,7 @@ After running the script, the lighthouse-reports folder will contain reports lik
     ├── report-1.html
     ├── report-2.html
     └── report-3.html
+    ```
 
 Each report corresponds to a URL from urls.txt, in the order they are listed.
 
