@@ -23,8 +23,8 @@ Clone or download this repository to your local machine.
   ```
 
 3. Customize the Script Settings
-• Output Folder: You can specify the output folder where the Lighthouse reports will be saved by modifying the outputFolder variable in the lighthouse-audit.js script. By default, it is set to lighthouse-reports.
-• Report Format: The script is currently configured to generate reports in HTML format. You can change this format to json or csv by modifying the reportFormat variable in the script, but HTML is recommended for a more readable report.
+- Output Folder: You can specify the output folder where the Lighthouse reports will be saved by modifying the outputFolder variable in the lighthouse-audit.js script. By default, it is set to lighthouse-reports.
+- Report Format: The script is currently configured to generate reports in HTML format. You can change this format to json or csv by modifying the reportFormat variable in the script, but HTML is recommended for a more readable report.
 
 4. Folder Structure
 Your folder structure should look like this:
@@ -56,9 +56,9 @@ After running the script, the lighthouse-reports folder will contain reports lik
 Each report corresponds to a URL from urls.txt, in the order they are listed.
 
 ## Troubleshooting
-• Ensure Node.js and Lighthouse CLI are installed correctly.
-• Make sure urls.txt is in the correct format, with one URL per line and no empty lines in between.
-• If you encounter permission issues, try running the command with elevated privileges (e.g., sudo on macOS/Linux).
+- Ensure Node.js and Lighthouse CLI are installed correctly.
+- Make sure urls.txt is in the correct format, with one URL per line and no empty lines in between.
+- If you encounter permission issues, try running the command with elevated privileges (e.g., sudo on macOS/Linux).
 
 ## License
 This project is licensed under the MIT License.
