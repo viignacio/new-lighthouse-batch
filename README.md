@@ -10,7 +10,6 @@ This script automates running Lighthouse audits on a list of URLs, generating in
   ```bash
   npm install -g lighthouse
 
-
 ## Setup
 1. Clone or Download the Repository
 Clone or download this repository to your local machine.
