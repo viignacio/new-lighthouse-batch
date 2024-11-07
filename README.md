@@ -28,13 +28,13 @@ Clone or download this repository to your local machine.
 
 4. Folder Structure
 Your folder structure should look like this:
-    ```
-    project-folder/
-    ├── urls.txt               # List of URLs to audit
-    ├── lighthouse-audit.js    # The script file
-    ├── README.md              # This README file
-    └── lighthouse-reports/    # Output folder for reports (will be created automatically)
-    ```
+  ```
+  project-folder/
+  ├── urls.txt               # List of URLs to audit
+  ├── lighthouse-audit.js    # The script file
+  ├── README.md              # This README file
+  └── lighthouse-reports/    # Output folder for reports (will be created automatically)
+  ```
 
 ## Running the Script
 Once you have completed the setup, you can run the script as follows: node lighthouse-audit.js
@@ -46,12 +46,12 @@ The script will:
 
 Example Output
 After running the script, the lighthouse-reports folder will contain reports like:
-    ```
-    lighthouse-reports/
-    ├── report-1.html
-    ├── report-2.html
-    └── report-3.html
-    ```
+  ```
+  lighthouse-reports/
+  ├── report-1.html
+  ├── report-2.html
+  └── report-3.html
+  ```
 
 Each report corresponds to a URL from urls.txt, in the order they are listed.
 
