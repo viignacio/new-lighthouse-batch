@@ -53,9 +53,9 @@ Example Output
 After running the script, the lighthouse-reports folder will contain reports like:
   ```
   lighthouse-reports/
-  ├── report-1.html
-  ├── report-2.html
-  └── report-3.html
+  ├── report-{url1}-{date}.html
+  ├── report-{url2}-{date}.html
+  └── report-{url3}-{date}.html
   ```
 
 Each report corresponds to a URL from urls.txt, in the order they are listed.

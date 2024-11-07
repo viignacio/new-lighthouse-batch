@@ -17,10 +17,10 @@ if (!fs.existsSync(outputFolder)) {
 
 // Function to show a loading indicator (dots)
 function showLoadingIndicator() {
-  const spinner = ['.', '..', '...'];
+  const spinner = ['◐', '◓', '◑', '◒'];
   let i = 0;
   const interval = setInterval(() => {
-    process.stdout.write(`\rAuditing${spinner[i]}`);
+    process.stdout.write(`\r└ Auditing ${spinner[i]}`);
     i = (i + 1) % spinner.length;
   }, 500);
   return interval;
@@ -29,7 +29,7 @@ function showLoadingIndicator() {
 // Function to stop the loading indicator
 function stopLoadingIndicator(interval) {
   clearInterval(interval);
-  process.stdout.write('\rDone!     \n'); // Clear loading indicator and show 'Done'
+  process.stdout.write('\r├ Done!             \n'); // Clear loading indicator and show 'Done!'
 }
 
 // Function to run Lighthouse audit for a single URL with preset toggle
@@ -60,10 +60,11 @@ async function runLighthouse(url, index) {
       stopLoadingIndicator(loadingIndicator); // Stop the loading indicator when done
 
       if (code === 0) {
-        console.log(`Lighthouse audit for ${url} completed successfully! Report saved to ${reportPath}`);
+        console.log(`✔ Lighthouse audit for ${url} completed successfully!\n└ Report saved to ${reportPath}\n`);
         resolve();
-      } else {
-        console.error(`Lighthouse audit for ${url} failed with exit code ${code}`);
+      } 
+      else {
+        console.error(`✗ Lighthouse audit for ${url} failed with exit code ${code}`);
         reject(new Error(`Lighthouse process exited with code ${code}`));
       }
     });
