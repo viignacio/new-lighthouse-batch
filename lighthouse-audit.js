@@ -8,6 +8,8 @@ const urlFile = 'urls.txt';
 const outputFolder = 'lighthouse-reports';
 // Report format
 const reportFormat = 'html';
+// Audit preset (choose 'mobile' or 'desktop')
+const auditPreset = 'desktop';
 
 if (!fs.existsSync(outputFolder)) {
   fs.mkdirSync(outputFolder);
@@ -18,7 +20,7 @@ function showLoadingIndicator() {
   const spinner = ['.', '..', '...'];
   let i = 0;
   const interval = setInterval(() => {
-    process.stdout.write(`\rAuditing. Please wait${spinner[i]}`);
+    process.stdout.write(`\rAuditing${spinner[i]}`);
     i = (i + 1) % spinner.length;
   }, 500);
   return interval;
@@ -30,7 +32,7 @@ function stopLoadingIndicator(interval) {
   process.stdout.write('\rDone!     \n'); // Clear loading indicator and show 'Done'
 }
 
-// Function to run Lighthouse audit for a single URL with loading indicator
+// Function to run Lighthouse audit for a single URL with preset toggle
 async function runLighthouse(url, index) {
   const sanitizedUrl = url.replace(/https?:\/\//, '').replace(/[\/:]/g, '_');
   const date = new Date().toISOString().split('T')[0];
@@ -41,10 +43,11 @@ async function runLighthouse(url, index) {
     url,
     `--output=${reportFormat}`,
     `--output-path=${reportPath}`,
-    `--chrome-flags="--ignore-certificate-errors --headless"`
+    `--chrome-flags="--ignore-certificate-errors --headless"`, // headless mode
+    `--preset=${auditPreset}` // Using preset for mobile or desktop
   ];
 
-  console.log(`Starting Lighthouse audit for ${url}...`);
+  console.log(`Starting Lighthouse audit for ${url} with ${auditPreset} preset...`);
   
   const loadingIndicator = showLoadingIndicator(); // Show loading indicator while audit runs
 

@@ -23,8 +23,10 @@ Clone or download this repository to your local machine.
   ```
 
 3. Customize the Script Settings
+- Text file: You can specify the name of the text file containing the URLs to audit by modifying the urlsFile variable in the lighthouse-audit.js script. By default, it is set to urls.txt.
 - Output Folder: You can specify the output folder where the Lighthouse reports will be saved by modifying the outputFolder variable in the lighthouse-audit.js script. By default, it is set to lighthouse-reports.
 - Report Format: The script is currently configured to generate reports in HTML format. You can change this format to json or csv by modifying the reportFormat variable in the script, but HTML is recommended for a more readable report.
+- Audit Preset: You can specify the Lighthouse audit preset to use by modifying the auditPreset variable in the script. By default, it is set to mobile.
 
 4. Folder Structure
 Your folder structure should look like this:
