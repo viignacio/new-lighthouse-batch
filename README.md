@@ -5,10 +5,10 @@ This script automates running Lighthouse audits on a list of URLs, generating in
 ## Prerequisites
 
 - **Node.js**: This script requires Node.js to be installed on your machine. You can download it from [Node.js official website](https://nodejs.org/).
-- **Lighthouse CLI**: The Lighthouse CLI is needed to run the audits. You can install it globally via npm:
+- **Lighthouse CLI**: The Lighthouse CLI is needed to run the audits. You can install it via npm:
 
   ```bash
-  npm install -g lighthouse
+  npm install
   ```
 
 ## Setup
