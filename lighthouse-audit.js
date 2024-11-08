@@ -9,7 +9,7 @@ const outputFolder = 'lighthouse-reports';
 // Report format
 const reportFormat = 'html';
 // Audit preset (choose 'mobile' or 'desktop')
-const auditPreset = 'desktop';
+const auditPreset = 'mobile';
 
 if (!fs.existsSync(outputFolder)) {
   fs.mkdirSync(outputFolder);
@@ -43,9 +43,13 @@ async function runLighthouse(url, index) {
     url,
     `--output=${reportFormat}`,
     `--output-path=${reportPath}`,
-    `--chrome-flags="--ignore-certificate-errors --headless"`, // headless mode
-    `--preset=${auditPreset}` // Using preset for mobile or desktop
+    `--chrome-flags="--ignore-certificate-errors --headless"` // headless mode
   ];
+
+  // Add the desktop preset flag only if auditPreset is set to 'desktop'
+  if (auditPreset === 'desktop') {
+    lighthouseArgs.push(`--preset=desktop`);
+  }
 
   console.log(`Starting Lighthouse audit for ${url} with ${auditPreset} preset...`);
   
