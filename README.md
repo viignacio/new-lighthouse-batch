@@ -5,30 +5,31 @@ This script automates running Lighthouse audits on a list of URLs, generating in
 ## Prerequisites
 
 - **Node.js**: This script requires Node.js to be installed on your machine. You can download it from [Node.js official website](https://nodejs.org/).
-- **Lighthouse CLI**: The Lighthouse CLI is needed to run the audits. You can install it via npm:
-
-  ```bash
-  npm install
-  ```
 
 ## Setup
 1. Clone or Download the Repository
 Clone or download this repository to your local machine.
 
-2. Set Up the urls.txt File
+2. Install Dependencies
+Run the following command to install the required dependencies:
+  ```bash
+  npm install
+  ```
+
+3. Set Up the urls.txt File
   ```
   https://example.com
   https://anotherexample.com
   https://yetanotherexample.com
   ```
 
-3. Customize the Script Settings
+4. Customize the Script Settings
 - Text file: You can specify the name of the text file containing the URLs to audit by modifying the urlsFile variable in the lighthouse-audit.js script. By default, it is set to urls.txt.
 - Output Folder: You can specify the output folder where the Lighthouse reports will be saved by modifying the outputFolder variable in the lighthouse-audit.js script. By default, it is set to lighthouse-reports.
 - Report Format: The script is currently configured to generate reports in HTML format. You can change this format to json or csv by modifying the reportFormat variable in the script, but HTML is recommended for a more readable report.
 - Audit Preset: You can specify the Lighthouse audit preset to use by modifying the auditPreset variable in the script. By default, it is set to mobile.
 
-4. Folder Structure
+5. Folder Structure
 Your folder structure should look like this:
   ```
   project-folder/
@@ -41,7 +42,7 @@ Your folder structure should look like this:
 ## Running the Script
 Once you have completed the setup, you can run the script as follows: 
   ```bash
-  node lighthouse-audit.js
+  npm start
   ```
 
 The script will:
