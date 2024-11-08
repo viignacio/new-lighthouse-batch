@@ -1,13 +1,12 @@
 const fs = require('fs');
 const { spawn } = require('child_process');
 const path = require('path');
+const csvWriter = require('csv-write-stream');
 
 // File containing the list of URLs
 const urlFile = 'urls.txt';
 // Output folder for the Lighthouse reports
 const outputFolder = 'lighthouse-reports';
-// Report format
-const reportFormat = 'html';
 // Audit preset (choose 'mobile' or 'desktop')
 const auditPreset = 'mobile';
 
@@ -24,12 +23,20 @@ if (!fs.existsSync(dateOutputFolder)) {
   fs.mkdirSync(dateOutputFolder);
 }
 
-// Function to show a loading indicator (dots)
-function showLoadingIndicator() {
+// Create CSV file with timestamped filename inside the date subfolder
+const timestamp = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }).replace(/\//g, '') +
+                  '-' +
+                  new Date().toLocaleTimeString('en-US', { hour12: false }).replace(/:/g, '');
+const csvFilePath = path.join(dateOutputFolder, `lighthouse-scores-${timestamp}.csv`);
+const writer = csvWriter({ headers: ['URL', 'Performance', 'Accessibility', 'Best Practices', 'SEO'] });
+writer.pipe(fs.createWriteStream(csvFilePath));
+
+// Function to show a loading indicator (dots) with the current URL being audited
+function showLoadingIndicator(url) {
   const spinner = ['◐', '◓', '◑', '◒'];
   let i = 0;
   const interval = setInterval(() => {
-    process.stdout.write(`\r└ Auditing ${spinner[i]}`);
+    process.stdout.write(`\r└ Auditing ${url} ${spinner[i]}`);
     i = (i + 1) % spinner.length;
   }, 500);
   return interval;
@@ -38,7 +45,7 @@ function showLoadingIndicator() {
 // Function to stop the loading indicator
 function stopLoadingIndicator(interval) {
   clearInterval(interval);
-  process.stdout.write('\r├ Done!             \n'); // Clear loading indicator and show 'Done!'
+  process.stdout.write('\r├ Done!                                                 \n'); // Clear loading indicator and show 'Done!'
 }
 
 // Function to run Lighthouse audit for a single URL with preset toggle
@@ -52,13 +59,13 @@ async function runLighthouse(url, index) {
   
   // Use the audit preset name (mobile or desktop) in the filename
   const reportPrefix = auditPreset === 'desktop' ? 'desktop' : 'mobile';
-  const reportPath = path.join(dateOutputFolder, `${reportPrefix}-${sanitizedUrl}-${timestamp}.${reportFormat}`);
+  const jsonReportPath = path.join(dateOutputFolder, `${reportPrefix}-${sanitizedUrl}-${timestamp}.json`);
   
   const lighthouseCommand = `lighthouse`;
   const lighthouseArgs = [
     url,
-    `--output=${reportFormat}`,
-    `--output-path=${reportPath}`,
+    `--output=json`,
+    `--output-path=${jsonReportPath}`,
     `--chrome-flags="--ignore-certificate-errors --headless"`
   ];
 
@@ -69,7 +76,7 @@ async function runLighthouse(url, index) {
 
   console.log(`Starting Lighthouse audit for ${url} with ${auditPreset} preset...`);
   
-  const loadingIndicator = showLoadingIndicator(); // Show loading indicator while audit runs
+  const loadingIndicator = showLoadingIndicator(url); // Show loading indicator while audit runs
 
   return new Promise((resolve, reject) => {
     // Start the Lighthouse process
@@ -80,8 +87,27 @@ async function runLighthouse(url, index) {
       stopLoadingIndicator(loadingIndicator); // Stop the loading indicator when done
 
       if (code === 0) {
-        console.log(`✔ Lighthouse audit for ${url} completed successfully!\n└ Report saved to ${reportPath}\n`);
-        resolve();
+        console.log(`✔ Lighthouse audit for ${url} completed successfully!\n└ Report saved to ${jsonReportPath}\n`);
+        
+        // Read the JSON file and extract scores
+        fs.readFile(jsonReportPath, 'utf8', (err, data) => {
+          if (err) {
+            console.error(`Error reading JSON report for ${url}: ${err}`);
+            reject(new Error(`Error reading JSON report`));
+          } else {
+            const report = JSON.parse(data);
+            const scores = {
+              performance: report.categories.performance.score * 100,
+              accessibility: report.categories.accessibility.score * 100,
+              bestPractices: report.categories['best-practices'].score * 100,
+              seo: report.categories.seo.score * 100
+            };
+
+            // Append scores to the CSV file
+            writer.write([url, scores.performance, scores.accessibility, scores.bestPractices, scores.seo, scores.pwa]);
+            resolve();
+          }
+        });
       } 
       else {
         console.error(`✗ Lighthouse audit for ${url} failed with exit code ${code}`);
@@ -103,6 +129,9 @@ async function runAuditsConsecutively() {
       console.error(`Failed to complete Lighthouse audit for ${urls[i]}: ${error.message}`);
     }
   }
+
+  // End CSV writing
+  writer.end();
 }
 
 runAuditsConsecutively();

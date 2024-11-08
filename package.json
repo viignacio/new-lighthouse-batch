@@ -7,7 +7,8 @@
     "start": "node lighthouse-audit.js"
   },
   "dependencies": {
-    "lighthouse": "^12.0.0"
+    "csv-write-stream": "^2.0.0",
+    "lighthouse": "^12.2.1"
   },
   "author": "viignacio",
   "license": "MIT"
