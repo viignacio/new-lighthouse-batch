@@ -53,9 +53,9 @@ After running the script, the lighthouse-reports folder will contain reports lik
   ```
   lighthouse-reports/
   └── MM-DD-YYYY
-      ├── report-{url1}-{date}.html
-      ├── report-{url2}-{date}.html
-      └── report-{url3}-{date}.html
+      ├── {preset}-{url1}-{timestamp}.html
+      ├── {preset}-{url2}-{timestamp}.html
+      └── {preset}-{url3}-{timestamp}.html
   ```
 
 Each report corresponds to a URL from urls.txt, in the order they are listed.
