@@ -7,11 +7,9 @@ This script automates running Lighthouse audits on a list of URLs, generating in
 - **Node.js**: This script requires Node.js to be installed on your machine. You can download it from [Node.js official website](https://nodejs.org/).
 
 ## Setup
-1. Clone or Download the Repository
-Clone or download this repository to your local machine.
+1. Clone or download this repository to your local machine.
 
-2. Install Dependencies
-Run the following command to install the required dependencies:
+2. Install all dependencies by running the following command:
   ```bash
   npm install
   ```
