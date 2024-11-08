@@ -11,8 +11,17 @@ const reportFormat = 'html';
 // Audit preset (choose 'mobile' or 'desktop')
 const auditPreset = 'mobile';
 
+// Create the main output folder if it doesn't exist
 if (!fs.existsSync(outputFolder)) {
   fs.mkdirSync(outputFolder);
+}
+
+// Create a subfolder with today's date in MMDDYY format
+const todayDate = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }).replace(/\//g, '');
+const dateOutputFolder = path.join(outputFolder, todayDate);
+
+if (!fs.existsSync(dateOutputFolder)) {
+  fs.mkdirSync(dateOutputFolder);
 }
 
 // Function to show a loading indicator (dots)
@@ -35,15 +44,22 @@ function stopLoadingIndicator(interval) {
 // Function to run Lighthouse audit for a single URL with preset toggle
 async function runLighthouse(url, index) {
   const sanitizedUrl = url.replace(/https?:\/\//, '').replace(/[\/:]/g, '_');
-  const date = new Date().toISOString().split('T')[0];
-  const reportPath = path.join(outputFolder, `report-${sanitizedUrl}-${date}.${reportFormat}`);
+  
+  // Create a compressed timestamp in MMDDYY-HHMMSS format
+  const timestamp = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }).replace(/\//g, '') +
+                    '-' +
+                    new Date().toLocaleTimeString('en-US', { hour12: false }).replace(/:/g, '');
+  
+  // Use the audit preset name (mobile or desktop) in the filename
+  const reportPrefix = auditPreset === 'desktop' ? 'desktop' : 'mobile';
+  const reportPath = path.join(dateOutputFolder, `${reportPrefix}-${sanitizedUrl}-${timestamp}.${reportFormat}`);
   
   const lighthouseCommand = `lighthouse`;
   const lighthouseArgs = [
     url,
     `--output=${reportFormat}`,
     `--output-path=${reportPath}`,
-    `--chrome-flags="--ignore-certificate-errors --headless"` // headless mode
+    `--chrome-flags="--ignore-certificate-errors --headless"`
   ];
 
   // Add the desktop preset flag only if auditPreset is set to 'desktop'
