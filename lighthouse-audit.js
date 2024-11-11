@@ -53,15 +53,18 @@ function waitForFile(filePath, maxRetries = 5, interval = 1000) {
   return new Promise((resolve, reject) => {
     let attempts = 0;
 
+    // Update the filePath to include .report.json for searching
+    const reportFilePath = filePath.replace('.json', '.report.json');
+
     const checkFile = () => {
-      fs.access(filePath, fs.constants.F_OK, (err) => {
+      fs.access(reportFilePath, fs.constants.F_OK, (err) => {
         if (!err) {
-          resolve();
+          resolve(reportFilePath);  // Return the correct path with .report.json
         } else if (attempts < maxRetries) {
           attempts++;
           setTimeout(checkFile, interval);
         } else {
-          reject(new Error(`File not found after ${maxRetries} attempts: ${filePath}`));
+          reject(new Error(`File not found after ${maxRetries} attempts: ${reportFilePath}`));
         }
       });
     };
@@ -86,7 +89,7 @@ async function runLighthouse(url, index) {
   const lighthouseCommand = `lighthouse`;
   const lighthouseArgs = [
     url,
-    `--output=json`,
+    `--output=json,html`,
     `--output-path=${reportPath}`,
     `--chrome-flags="--ignore-certificate-errors --headless"`
   ];
@@ -112,11 +115,11 @@ async function runLighthouse(url, index) {
         console.log(`✔ Lighthouse audit for ${url} completed successfully!\n└ Report saved to ${reportPath}`);
         
         try {
-          // Wait for the JSON file to exist before reading
-          await waitForFile(reportPath);
+          // Wait for the .report.json file to exist before reading
+          const finalReportPath = await waitForFile(reportPath);
 
           // Read the JSON file and extract scores
-          fs.readFile(reportPath, 'utf8', (err, data) => {
+          fs.readFile(finalReportPath, 'utf8', (err, data) => {
             if (err) {
               console.error(`Error reading JSON report for ${url}: ${err}`);
               reject(new Error(`Error reading JSON report`));
@@ -135,7 +138,7 @@ async function runLighthouse(url, index) {
             }
           });
         } catch (error) {
-          console.error(`Failed to find JSON report file for ${url}: ${error.message}`);
+          console.error(`└ Failed to find JSON report file for ${url}: ${error.message}`);
           reject(error);
         }
       } else {
@@ -155,12 +158,17 @@ async function runAuditsConsecutively() {
     try {
       await runLighthouse(urls[i], i);
     } catch (error) {
-      console.error(`Failed to complete Lighthouse audit for ${urls[i]}: ${error.message}`);
+      console.error(`└ Failed to complete Lighthouse audit for ${urls[i]}: ${error.message}`);
     }
   }
 
   // End CSV writing
   writer.end();
+
+  // After all audits, output the path of the CSV file
+  setTimeout(() => {
+    console.log(`\n✔ Consolidated report saved to: ${csvFilePath}`);
+  }, 2000);  // Wait for a bit to ensure the CSV file is fully written before printing the path
 }
 
 runAuditsConsecutively();
