@@ -48,6 +48,28 @@ function stopLoadingIndicator(interval) {
   process.stdout.write('\r├ Done!                                                 \n'); // Clear loading indicator and show 'Done!'
 }
 
+// Function to wait for the JSON file to exist, retrying up to a certain number of times
+function waitForFile(filePath, maxRetries = 5, interval = 1000) {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+
+    const checkFile = () => {
+      fs.access(filePath, fs.constants.F_OK, (err) => {
+        if (!err) {
+          resolve();
+        } else if (attempts < maxRetries) {
+          attempts++;
+          setTimeout(checkFile, interval);
+        } else {
+          reject(new Error(`File not found after ${maxRetries} attempts: ${filePath}`));
+        }
+      });
+    };
+
+    checkFile();
+  });
+}
+
 // Function to run Lighthouse audit for a single URL with preset toggle
 async function runLighthouse(url, index) {
   const sanitizedUrl = url.replace(/https?:\/\//, '').replace(/[\/:]/g, '_');
@@ -59,13 +81,13 @@ async function runLighthouse(url, index) {
   
   // Use the audit preset name (mobile or desktop) in the filename
   const reportPrefix = auditPreset === 'desktop' ? 'desktop' : 'mobile';
-  const jsonReportPath = path.join(dateOutputFolder, `${reportPrefix}-${sanitizedUrl}-${timestamp}.json`);
+  const reportPath = path.join(dateOutputFolder, `${reportPrefix}-${sanitizedUrl}-${timestamp}.json`);
   
   const lighthouseCommand = `lighthouse`;
   const lighthouseArgs = [
     url,
     `--output=json`,
-    `--output-path=${jsonReportPath}`,
+    `--output-path=${reportPath}`,
     `--chrome-flags="--ignore-certificate-errors --headless"`
   ];
 
@@ -74,7 +96,7 @@ async function runLighthouse(url, index) {
     lighthouseArgs.push(`--preset=desktop`);
   }
 
-  console.log(`Starting Lighthouse audit for ${url} with ${auditPreset} preset...`);
+  console.log(`\nStarting Lighthouse audit for ${url} with ${auditPreset} preset...`);
   
   const loadingIndicator = showLoadingIndicator(url); // Show loading indicator while audit runs
 
@@ -83,33 +105,40 @@ async function runLighthouse(url, index) {
     const lighthouseProcess = spawn(lighthouseCommand, lighthouseArgs, { shell: true });
 
     // Wait for the process to complete
-    lighthouseProcess.on('close', (code) => {
+    lighthouseProcess.on('close', async (code) => {
       stopLoadingIndicator(loadingIndicator); // Stop the loading indicator when done
 
       if (code === 0) {
-        console.log(`✔ Lighthouse audit for ${url} completed successfully!\n└ Report saved to ${jsonReportPath}\n`);
+        console.log(`✔ Lighthouse audit for ${url} completed successfully!\n└ Report saved to ${reportPath}`);
         
-        // Read the JSON file and extract scores
-        fs.readFile(jsonReportPath, 'utf8', (err, data) => {
-          if (err) {
-            console.error(`Error reading JSON report for ${url}: ${err}`);
-            reject(new Error(`Error reading JSON report`));
-          } else {
-            const report = JSON.parse(data);
-            const scores = {
-              performance: report.categories.performance.score * 100,
-              accessibility: report.categories.accessibility.score * 100,
-              bestPractices: report.categories['best-practices'].score * 100,
-              seo: report.categories.seo.score * 100
-            };
+        try {
+          // Wait for the JSON file to exist before reading
+          await waitForFile(reportPath);
 
-            // Append scores to the CSV file
-            writer.write([url, scores.performance, scores.accessibility, scores.bestPractices, scores.seo, scores.pwa]);
-            resolve();
-          }
-        });
-      } 
-      else {
+          // Read the JSON file and extract scores
+          fs.readFile(reportPath, 'utf8', (err, data) => {
+            if (err) {
+              console.error(`Error reading JSON report for ${url}: ${err}`);
+              reject(new Error(`Error reading JSON report`));
+            } else {
+              const report = JSON.parse(data);
+              const scores = {
+                performance: report.categories.performance.score * 100,
+                accessibility: report.categories.accessibility.score * 100,
+                bestPractices: report.categories['best-practices'].score * 100,
+                seo: report.categories.seo.score * 100
+              };
+
+              // Append scores to the CSV file
+              writer.write([url, scores.performance, scores.accessibility, scores.bestPractices, scores.seo, scores.pwa]);
+              resolve();
+            }
+          });
+        } catch (error) {
+          console.error(`Failed to find JSON report file for ${url}: ${error.message}`);
+          reject(error);
+        }
+      } else {
         console.error(`✗ Lighthouse audit for ${url} failed with exit code ${code}`);
         reject(new Error(`Lighthouse process exited with code ${code}`));
       }
