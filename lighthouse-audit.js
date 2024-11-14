@@ -6,7 +6,7 @@ const csvWriter = require('csv-write-stream');
 // Output folder for the Lighthouse reports
 const outputFolder = 'lighthouse-reports';
 // File containing the list of URLs
-const urlFile = 'urls.txt';
+const urlFile = 'WB-2572.txt';
 // Audit preset (choose 'mobile' or 'desktop')
 const auditPreset = 'mobile';
 
@@ -27,7 +27,7 @@ if (!fs.existsSync(dateOutputFolder)) {
 const timestamp = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }).replace(/\//g, '') +
                   '-' +
                   new Date().toLocaleTimeString('en-US', { hour12: false }).replace(/:/g, '');
-const csvFilePath = path.join(dateOutputFolder, `lighthouse-scores-${timestamp}.csv`);
+const csvFilePath = path.join(dateOutputFolder, `lighthouse-scores-${auditPreset}-${timestamp}.csv`);
 const writer = csvWriter({ headers: ['URL', 'Performance', 'Accessibility', 'Best Practices', 'SEO'] });
 writer.pipe(fs.createWriteStream(csvFilePath));
 
@@ -45,7 +45,7 @@ function showLoadingIndicator(url) {
 // Function to stop the loading indicator
 function stopLoadingIndicator(interval) {
   clearInterval(interval);
-  process.stdout.write('\r├ Done!                                                 \n'); // Clear loading indicator and show 'Done!'
+  process.stdout.write('\x1b[2K\r├ Done!\n'); // Clear loading indicator and show 'Done!'
 }
 
 // Function to wait for the JSON file to exist, retrying up to a certain number of times
@@ -126,10 +126,10 @@ async function runLighthouse(url, index) {
             } else {
               const report = JSON.parse(data);
               const scores = {
-                performance: report.categories.performance.score * 100,
-                accessibility: report.categories.accessibility.score * 100,
-                bestPractices: report.categories['best-practices'].score * 100,
-                seo: report.categories.seo.score * 100
+                performance: Math.round(report.categories.performance.score * 100),
+                accessibility: Math.round(report.categories.accessibility.score * 100),
+                bestPractices: Math.round(report.categories['best-practices'].score * 100),
+                seo: Math.round(report.categories.seo.score * 100),
               };
 
               // Append scores to the CSV file
