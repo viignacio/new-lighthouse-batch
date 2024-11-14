@@ -3,10 +3,10 @@ const { spawn } = require('child_process');
 const path = require('path');
 const csvWriter = require('csv-write-stream');
 
-// File containing the list of URLs
-const urlFile = 'urls.txt';
 // Output folder for the Lighthouse reports
 const outputFolder = 'lighthouse-reports';
+// File containing the list of URLs
+const urlFile = 'urls.txt';
 // Audit preset (choose 'mobile' or 'desktop')
 const auditPreset = 'mobile';
 
@@ -31,7 +31,7 @@ const csvFilePath = path.join(dateOutputFolder, `lighthouse-scores-${timestamp}.
 const writer = csvWriter({ headers: ['URL', 'Performance', 'Accessibility', 'Best Practices', 'SEO'] });
 writer.pipe(fs.createWriteStream(csvFilePath));
 
-// Function to show a loading indicator (dots) with the current URL being audited
+// Function to show a loading indicator (spinner) with the current URL being audited
 function showLoadingIndicator(url) {
   const spinner = ['◐', '◓', '◑', '◒'];
   let i = 0;
