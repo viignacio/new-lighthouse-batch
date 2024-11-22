@@ -6,9 +6,9 @@ const csvWriter = require('csv-write-stream');
 // Output folder for the Lighthouse reports
 const outputFolder = 'lighthouse-reports';
 // File containing the list of URLs
-const urlFile = 'WB-2572.txt';
-// Audit preset (choose 'mobile' or 'desktop')
-const auditPreset = 'mobile';
+const urlFile = 'urls-otf.txt';
+// Audit preset (choose 'mobile', 'desktop', or 'both')
+const auditPreset = 'both';
 
 // Create the main output folder if it doesn't exist
 if (!fs.existsSync(outputFolder)) {
@@ -28,7 +28,7 @@ const timestamp = new Date().toLocaleDateString('en-US', { month: '2-digit', day
                   '-' +
                   new Date().toLocaleTimeString('en-US', { hour12: false }).replace(/:/g, '');
 const csvFilePath = path.join(dateOutputFolder, `lighthouse-scores-${auditPreset}-${timestamp}.csv`);
-const writer = csvWriter({ headers: ['URL', 'Performance', 'Accessibility', 'Best Practices', 'SEO'] });
+const writer = csvWriter({ headers: ['URL', 'Preset', 'Performance', 'Accessibility', 'Best Practices', 'SEO'] });
 writer.pipe(fs.createWriteStream(csvFilePath));
 
 // Function to show a loading indicator (spinner) with the current URL being audited
@@ -52,14 +52,12 @@ function stopLoadingIndicator(interval) {
 function waitForFile(filePath, maxRetries = 5, interval = 1000) {
   return new Promise((resolve, reject) => {
     let attempts = 0;
-
-    // Update the filePath to include .report.json for searching
     const reportFilePath = filePath.replace('.json', '.report.json');
 
     const checkFile = () => {
       fs.access(reportFilePath, fs.constants.F_OK, (err) => {
         if (!err) {
-          resolve(reportFilePath);  // Return the correct path with .report.json
+          resolve(reportFilePath);
         } else if (attempts < maxRetries) {
           attempts++;
           setTimeout(checkFile, interval);
@@ -73,8 +71,8 @@ function waitForFile(filePath, maxRetries = 5, interval = 1000) {
   });
 }
 
-// Function to run Lighthouse audit for a single URL with preset toggle
-async function runLighthouse(url, index) {
+// Function to run Lighthouse audit for a single URL with a specific preset
+async function runLighthouse(url, preset) {
   const sanitizedUrl = url.replace(/https?:\/\//, '').replace(/[\/:]/g, '_');
   
   // Create a compressed timestamp in MMDDYY-HHMMSS format
@@ -82,9 +80,7 @@ async function runLighthouse(url, index) {
                     '-' +
                     new Date().toLocaleTimeString('en-US', { hour12: false }).replace(/:/g, '');
   
-  // Use the audit preset name (mobile or desktop) in the filename
-  const reportPrefix = auditPreset === 'desktop' ? 'desktop' : 'mobile';
-  const reportPath = path.join(dateOutputFolder, `${reportPrefix}-${sanitizedUrl}-${timestamp}.json`);
+  const reportPath = path.join(dateOutputFolder, `${preset}-${sanitizedUrl}-${timestamp}.json`);
   
   const lighthouseCommand = `lighthouse`;
   const lighthouseArgs = [
@@ -94,12 +90,12 @@ async function runLighthouse(url, index) {
     `--chrome-flags="--ignore-certificate-errors --headless"`
   ];
 
-  // Add the desktop preset flag only if auditPreset is set to 'desktop'
-  if (auditPreset === 'desktop') {
+  // Add the preset flag
+  if (preset === 'desktop') {
     lighthouseArgs.push(`--preset=desktop`);
   }
 
-  console.log(`\nStarting Lighthouse audit for ${url} with ${auditPreset} preset...`);
+  console.log(`\nStarting Lighthouse audit for ${url} with ${preset} preset...`);
   
   const loadingIndicator = showLoadingIndicator(url); // Show loading indicator while audit runs
 
@@ -133,7 +129,7 @@ async function runLighthouse(url, index) {
               };
 
               // Append scores to the CSV file
-              writer.write([url, scores.performance, scores.accessibility, scores.bestPractices, scores.seo, scores.pwa]);
+              writer.write([url, preset, scores.performance, scores.accessibility, scores.bestPractices, scores.seo]);
               resolve();
             }
           });
@@ -156,7 +152,14 @@ async function runAuditsConsecutively() {
   
   for (let i = 0; i < urls.length; i++) {
     try {
-      await runLighthouse(urls[i], i);
+      if (auditPreset === 'both') {
+        // Run for both desktop and mobile
+        await runLighthouse(urls[i], 'desktop');
+        await runLighthouse(urls[i], 'mobile');
+      } else {
+        // Run for the specified preset
+        await runLighthouse(urls[i], auditPreset);
+      }
     } catch (error) {
       console.error(`└ Failed to complete Lighthouse audit for ${urls[i]}: ${error.message}`);
     }
